@@ -1,8 +1,8 @@
 # Entrega · Laboratorio MVC · Notas del semestre
 
-**Equipo:** ______________________  
-**Integrantes:** ______________________  
-**Repositorio:** ______________________
+**Equipo:** __4__ 
+**Integrantes:** __Angie Sofia Martinez Obando y David Sanchez__  
+**Repositorio:** (https://github.com/angiemartinezob-cell/mvc-notas-lab)
 
 > Completa este archivo a medida que avanzas (cada sección dice en qué parte de la guía se llena).
 > Escribe con tus palabras: las respuestas copiadas de la guía o de otro equipo no cuentan.
@@ -151,16 +151,41 @@ ARQUITECTURA
 Después de cada cambio ejecuta `git diff --stat HEAD~1` (o `git show --stat`) y pega el resultado.
 La idea: **cada cambio debía tocar solo las piezas que le corresponden**.
 
+
 | Cambio | Archivos que tocaste | ¿Era lo esperado? ¿Por qué? |
 |---|---|---|
-| 5A · Nombres únicos | | |
-| 5B · Segunda vista (termómetro) | | |
-| 5C · Otro almacén | | |
+| 5A · Nombres únicos | `src/modelo.js` | Sí, porque la verificación de nombres repetidos debía hacerse en el Modelo, que es donde manejamos las reglas de las evaluaciones. |
+| 5B · Segunda vista (termómetro) | `src/termometro-vista.js`, `src/main.js` | Sí, porque creamos una nueva Vista para mostrar el progreso académico y la conectamos al Modelo desde `main.js`, sin modificar las reglas de negocio. |
+| 5C · Otro almacén | `src/almacen.js`, `src/main.js` | Sí, porque agregamos `AlmacenSesion` para guardar los datos en `sessionStorage` y cambiamos su configuración en `main.js`, sin modificar la lógica del Modelo. |
 
+Evidencia de Git
+
+Ejecutamos el comando git show --stat para revisar los archivos modificados en el último commit.
+git show --stat      
+commit d4d5c85a68c04bdecd7e66c1ba9e922673547f95 (HEAD -> main, origin/main, origin/HEAD)
+Author: angiemartinezob-cell <angie.martinezob@amigo.edu.co>
+Date:   Fri Oct 16 15:28:29 2026 -0500
+
+    Implementar arquitectura MVC y mejoras del laboratorio
+
+ ENTREGA.md              | 117 +++++++++++++++++++++-----
+ src/almacen.js          |  24 ++++++
+ src/controlador.js      |  68 +++++++++++++--
+ src/main.js             |  21 +++--
+ src/modelo.js           | 186 ++++++++++++++++++++++++++++++++++++-----
+ src/termometro-vista.js |  51 ++++++++++++
+ src/vista.js            | 215 +++++++++++++++++++++++++++++++++++++++++-------
+ 7 files changed, 595 insertions(+), 87 deletions(-)
+ Los cambios de las partes 5A, 5B y 5C se guardaron en un mismo commit, por eso Git muestra los archivos modificados en conjunto. En la tabla anterior explicamos cuáles corresponden a cada parte.
 ## 6. Reflexión (Parte 6)
 
 1. En la versión espagueti, ¿qué tuviste que leer o tocar para entender dónde se decide si el estudiante aprobó? ¿Y en la versión MVC?
+En la versión espagueti tenía que revisar una función que mezclaba cálculos, condiciones y cambios en la pantalla. En MVC es más sencillo porque el Modelo se encarga de calcular y determinar el estado académico, mientras que la Vista muestra el resultado.
 2. ¿Por qué el Modelo **no** debe llamar a `alert()` ni a `document`? ¿Qué pasaría con las pruebas del Modelo si lo hiciera?
+Porque el Modelo debe encargarse únicamente de los datos y las reglas del sistema, sin depender de la interfaz. Si utilizara alert() o document, sería más difícil probarlo de forma independiente y reutilizarlo en otra aplicación.
 3. El Modelo avisa de sus cambios sin saber quién escucha (Observer). ¿Qué ganamos con eso frente a que el Modelo llame directamente a `vista.render()`?
+Con Observer logramos que el Modelo avise cuando algo cambia, sin tener que saber qué vistas están conectadas. Esto nos sirvió cuando agregamos el termómetro, porque pudimos actualizarlo sin cambiar el funcionamiento del Modelo.
 4. Elige un olor de MVC (controlador gordo, lógica en la Vista, Modelo que toca la pantalla, Modelo anémico) que te hubiera sido fácil cometer hoy. ¿Cuál y cómo lo evitaron?
+Uno de los errores más fáciles de cometer era colocar las validaciones dentro de la Vista, porque allí se reciben los datos del formulario. Lo evitamos dejando las reglas de negocio en el Modelo y utilizando el Controlador para coordinar las acciones del usuario.
 5. ¿Para qué tipo de aplicación **no** usarías MVC? Justifica con lo que viste en el laboratorio.
+No lo utilizaría necesariamente en una página estática muy sencilla, que solo muestre información y no tenga reglas de negocio ni interacciones importantes. En ese caso, separar todo en Modelo, Vista y Controlador podría agregar una complejidad que no se necesita.
