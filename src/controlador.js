@@ -14,14 +14,70 @@ export class NotasControlador {
   #modelo;
   #vista;
 
-  constructor(modelo, vista) {
-    this.#modelo = modelo;
-    this.#vista = vista;
+  
+constructor(modelo, vista) {
+  this.#modelo = modelo;
+  this.#vista = vista;
 
-    // TODO 4A: regístrate en la Vista (vista.alAgregar, vista.alEliminar, vista.alCalificar).
-    //          Cada manejador convierte los datos (la Vista entrega TEXTO; el Modelo espera números y null)
-    //          y le da la orden al Modelo.
+  // Agregar una evaluación
+  this.#vista.alAgregar((datos) => {
+    const nombre = datos.nombre;
+    const peso = Number(datos.peso);
+    const nota = datos.nota.trim() === ''
+      ? null
+      : Number(datos.nota);
+
+    this.#ejecutar(() => {
+      this.#modelo.agregar({ nombre, peso, nota });
+    }, true);
+  });
+
+  // Eliminar una evaluación
+  this.#vista.alEliminar((id) => {
+    this.#ejecutar(() => {
+      this.#modelo.eliminar(id);
+    });
+  });
+
+  // Calificar una evaluación
+  this.#vista.alCalificar((id, textoNota) => {
+    const nota = textoNota.trim() === ''
+      ? null
+      : Number(textoNota);
+
+    this.#ejecutar(() => {
+      this.#modelo.calificar(id, nota);
+    });
+  });
+}
+
+#ejecutar(orden, limpiarFormulario = false) {
+  try {
+    // Ejecutar la operación solicitada al Modelo
+    orden();
+
+    // Si todo salió bien, limpiar el error
+    this.#vista.limpiarError();
+
+    // Limpiar el formulario únicamente al agregar
+    if (limpiarFormulario) {
+      this.#vista.limpiarFormulario();
+    }
+
+  } catch (error) {
+    if (error instanceof ErrorDeReglas) {
+      // Mostrar el mensaje de validación
+      this.#vista.mostrarError(error.message);
+
+      // Restaurar los datos visibles desde el Modelo
+      this.#vista.render();
+    } else {
+      // No ocultar errores inesperados
+      throw error;
+    }
   }
+}
+
 
   // TODO 4B: un método privado que ejecute una orden al Modelo y, si lanza un ErrorDeReglas, le pida a la Vista
   //          que muestre el mensaje (y que se redibuje, para deshacer lo que el usuario escribió y el Modelo no aceptó).
