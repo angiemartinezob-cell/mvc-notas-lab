@@ -62,39 +62,31 @@ Dibuja (a mano y pega una foto, o con texto/Mermaid) el recorrido completo desde
           |
           v
 3. vista.js → leerFormulario()
-   Obtiene el nombre, peso y nota como texto.
+   Obtiene el nombre, peso y nota.
           |
           v
-4. controlador.js → constructor()
-   Recibe los datos y convierte peso y nota.
+4. controlador.js → manejador registrado en constructor()
+   Recibe los datos, convierte los valores y solicita agregarlos.
           |
           v
-5. controlador.js → #ejecutar()
-   Solicita al Modelo agregar la evaluación.
+5. modelo.js → agregar()
+   Valida y registra la evaluación.
           |
           v
-6. modelo.js → agregar()
-   Valida los datos y registra la evaluación.
+6. modelo.js → #cambio()
+   Guarda los datos y notifica a los suscriptores.
           |
-          v
-7. modelo.js → #cambio()
-   Guarda los datos y avisa a los suscriptores.
-          |
-          v
-8. almacen.js → guardar()
-   Conserva las evaluaciones en sessionStorage.
-          |
-          v
-9. vista.js → render()
-   Actualiza la tabla y el resumen académico.
-          |
-          v
-10. termometro-vista.js → render()
-    Actualiza la barra de aprobación.
-          |
-          v
-11. Usuario
-    Ve la nueva evaluación y el termómetro actualizado.
+          +----------------------+
+          |                      |
+          v                      v
+7. almacen.js → guardar()   8. Vistas suscritas al Modelo
+   Guarda en sessionStorage.   vista.js → render()
+                                termometro-vista.js → render()
+                                Actualizan sus representaciones.
+                                         |
+                                         v
+                                9. Usuario
+                                Ve la evaluación y el termómetro actualizado.
 
 ```
 
@@ -182,7 +174,7 @@ src/termometro-vista.js | 51
 1 file changed, 51 insertions(+)
 ```
 
-Creamos una vista independiente para mostrar el progreso académico mediante un termómetro. Esto permitió incorporar otra representación de la información sin modificar las reglas de negocio del Modelo.
+Creamos una vista independiente en `termometro-vista.js` para mostrar el progreso académico mediante un termómetro. El commit `83aab50` registra la creación de esta vista, mientras que su conexión con el Modelo desde `main.js` quedó incluida en otro commit. De esta manera, incorporamos una nueva representación de la información sin modificar las reglas de negocio del Modelo.
 
 **Parte 5C · Almacenamiento de sesión**
 
