@@ -1,19 +1,22 @@
-// RAÍZ DE COMPOSICIÓN: el único lugar que conoce las tres piezas y las conecta.
-// (Ya viene escrito; en las Partes 5B y 5C vuelves a este archivo.)
+
+// RAÍZ DE COMPOSICIÓN: aquí se conectan las piezas MVC.
+
 
 import { NotasModelo } from './modelo.js';
 import { NotasVista } from './vista.js';
 import { NotasControlador } from './controlador.js';
-import { AlmacenLocal } from './almacen.js';
+import { AlmacenSesion } from './almacen.js';
+import { TermometroVista } from './termometro-vista.js';
 
-// 1. El Modelo, con el almacén que elijamos.
-const modelo = new NotasModelo(new AlmacenLocal('notas.v1'));
+// 1. Crear el Modelo utilizando almacenamiento de sesión
+const modelo = new NotasModelo(new AlmacenSesion('notas.v1'));
 
-// 2. La Vista: recibe el Modelo para poder LEERLO y suscribirse a sus cambios.
+// 2. Crear la Vista principal
 const vista = new NotasVista(document.getElementById('app'), modelo);
 
-// 3. El Controlador: recibe las dos piezas y las conecta (eventos de la Vista → acciones del Modelo).
+// 3. Conectar el Controlador
 new NotasControlador(modelo, vista);
 
-// Parte 5B: aquí montarás la segunda vista (el termómetro).
-// Parte 5C: aquí cambiarás el almacén por otro.
+// 4. Crear la segunda Vista: termómetro de aprobación
+new TermometroVista(document.getElementById('termometro'), modelo);
+
