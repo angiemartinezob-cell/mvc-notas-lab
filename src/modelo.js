@@ -50,40 +50,184 @@ export class NotasModelo {
   }
 
   // ---------------------------------------------------------------- 2A · Agregar y validar
-  agregar({ nombre, peso, nota = null }) {
-    // TODO 2A: valida, EN ESTE ORDEN: nombre, peso, nota y suma de pesos (mensajes en la guía).
-    //          Si todo está bien: crea { id, nombre, peso, nota }, agrégalo y llama a this.#cambio().
-    //          Si algo está mal: lanza new ErrorDeReglas('...') SIN cambiar nada.
-    throw new Error('TODO 2A · agregar()');
+  
+agregar({ nombre, peso, nota = null }) {
+  // 1. Validar el nombre
+  nombre = typeof nombre === 'string' ? nombre.trim() : '';
+
+  if (nombre === '') {
+    throw new ErrorDeReglas('El nombre es obligatorio.');
   }
+
+  if (nombre.length > MAX_NOMBRE) {
+    throw new ErrorDeReglas('El nombre no puede superar 40 caracteres.');
+  }
+  
+  
+  // Validar que no exista otra evaluación con el mismo nombre
+  const nombreRepetido = this.#evaluaciones.some(
+    evaluacion =>
+      evaluacion.nombre.trim().toLowerCase() === nombre.toLowerCase()
+  );
+
+  if (nombreRepetido) {
+    throw new ErrorDeReglas(
+      'Ya existe una evaluación con ese nombre.'
+    );
+  }
+
+
+  // 2. Validar el peso
+  if (typeof peso !== 'number' || !Number.isFinite(peso) || peso < 1 || peso > 100) {
+    throw new ErrorDeReglas('El peso debe estar entre 1 y 100.');
+  }
+
+  // 3. Validar la nota, si se proporciona
+  if (nota !== null &&
+      (typeof nota !== 'number' || !Number.isFinite(nota) || nota < 0 || nota > NOTA_MAXIMA)) {
+    throw new ErrorDeReglas('La nota debe estar entre 0 y 5.');
+  }
+
+  // 4. Validar que los pesos no superen el 100 %
+  const total = this.#evaluaciones.reduce((suma, e) => suma + e.peso, 0);
+
+  if (total + peso > 100 + EPS) {
+    const restante = Math.round((100 - total) * 100) / 100;
+    throw new ErrorDeReglas(
+      `Los pesos no pueden sumar más de 100 % (te quedan ${restante} %).`
+    );
+  }
+
+  // 5. Registrar la evaluación
+  const evaluacion = {
+    id: this.#siguienteId++,
+    nombre,
+    peso,
+    nota
+  };
+
+  this.#evaluaciones.push(evaluacion);
+  this.#cambio();
+}
+
 
   // ---------------------------------------------------------------- 2B · Calificar y eliminar
-  calificar(id, nota) {
-    // TODO 2B: la nota puede ser null (quitar) o un número entre 0 y 5. Si el id no existe → ErrorDeReglas.
-    throw new Error('TODO 2B · calificar()');
+  
+calificar(id, nota) {
+  // Buscar la evaluación por su ID
+  const evaluacion = this.#evaluaciones.find(e => e.id === id);
+
+  if (!evaluacion) {
+    throw new ErrorDeReglas('No existe la evaluación.');
   }
 
-  eliminar(id) {
-    // TODO 2B: quita la evaluación. Si el id no existe → ErrorDeReglas.
-    throw new Error('TODO 2B · eliminar()');
+  // Validar la nota, permitiendo null
+  if (nota !== null &&
+      (typeof nota !== 'number' || !Number.isFinite(nota) ||
+       nota < 0 || nota > NOTA_MAXIMA)) {
+    throw new ErrorDeReglas('La nota debe estar entre 0 y 5.');
   }
+
+  // Actualizar la nota
+  evaluacion.nota = nota;
+
+  // Guardar y notificar el cambio
+  this.#cambio();
+}
+
+
+  
+eliminar(id) {
+  // Buscar la posición de la evaluación
+  const indice = this.#evaluaciones.findIndex(e => e.id === id);
+
+  if (indice === -1) {
+    throw new ErrorDeReglas('No existe la evaluación.');
+  }
+
+  // Eliminar la evaluación
+  this.#evaluaciones.splice(indice, 1);
+
+  // Guardar y notificar el cambio
+  this.#cambio();
+}
+
 
   // ---------------------------------------------------------------- 2C · Resumen
-  resumen() {
-    // TODO 2C: devuelve { acumulado, pesoCalificado, pesoPendiente, notaNecesaria, estado }.
-    //          Usa NOTA_MINIMA, NOTA_MAXIMA, UMBRAL_RIESGO, EPS y redondearArriba (ya están arriba).
-    throw new Error('TODO 2C · resumen()');
+  
+resumen() {
+  let acumulado = 0;
+  let pesoCalificado = 0;
+
+  for (const evaluacion of this.#evaluaciones) {
+    if (evaluacion.nota !== null) {
+      acumulado += evaluacion.peso * evaluacion.nota / 100;
+      pesoCalificado += evaluacion.peso;
+    }
   }
+
+  const pesoPendiente = 100 - pesoCalificado;
+
+  let notaNecesaria = null;
+
+  if (pesoPendiente > 0) {
+    const calculo = Math.max(
+      0,
+      (NOTA_MINIMA - acumulado) / (pesoPendiente / 100)
+    );
+
+    notaNecesaria = redondearArriba(calculo);
+  }
+
+  let estado;
+
+  if (acumulado + EPS >= NOTA_MINIMA) {
+    estado = 'aprobado';
+  } else if (
+    notaNecesaria === null ||
+    notaNecesaria > NOTA_MAXIMA
+  ) {
+    estado = 'imposible';
+  } else if (notaNecesaria > UMBRAL_RIESGO) {
+    estado = 'en-riesgo';
+  } else {
+    estado = 'en-camino';
+  }
+
+  return {
+    acumulado,
+    pesoCalificado,
+    pesoPendiente,
+    notaNecesaria,
+    estado
+  };
+}
+
 
   // ---------------------------------------------------------------- 2D · Observer y persistencia
-  suscribir(suscriptor) {
-    // TODO 2D: guarda el suscriptor y devuelve una función que lo cancele.
-    throw new Error('TODO 2D · suscribir()');
-  }
+  
+suscribir(suscriptor) {
+  // Registrar el observador
+  this.#suscriptores.add(suscriptor);
 
-  #cambio() {
-    // TODO 2D: después de CADA cambio: guarda en el almacén (this.#almacen.guardar(...)) y avisa a los suscriptores.
+  // Devolver una función para cancelar la suscripción
+  return () => {
+    this.#suscriptores.delete(suscriptor);
+  };
+}
+
+
+  
+#cambio() {
+  // Guardar las evaluaciones actualizadas
+  this.#almacen.guardar(this.evaluaciones);
+
+  // Avisar a todos los observadores
+  for (const suscriptor of this.#suscriptores) {
+    suscriptor();
   }
+}
+
 
   // Puedes agregar aquí los métodos privados que necesites (por ejemplo #buscar(id) o #validarNota(nota)).
 }
