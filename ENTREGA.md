@@ -158,25 +158,45 @@ La idea: **cada cambio debía tocar solo las piezas que le corresponden**.
 | 5B · Segunda vista (termómetro) | `src/termometro-vista.js`, `src/main.js` | Sí, porque creamos una nueva Vista para mostrar el progreso académico y la conectamos al Modelo desde `main.js`, sin modificar las reglas de negocio. |
 | 5C · Otro almacén | `src/almacen.js`, `src/main.js` | Sí, porque agregamos `AlmacenSesion` para guardar los datos en `sessionStorage` y cambiamos su configuración en `main.js`, sin modificar la lógica del Modelo. |
 
-Evidencia de Git
+### Evidencia de Git
 
-Ejecutamos el comando git show --stat para revisar los archivos modificados en el último commit.
-git show --stat      
-commit d4d5c85a68c04bdecd7e66c1ba9e922673547f95 (HEAD -> main, origin/main, origin/HEAD)
-Author: angiemartinezob-cell <angie.martinezob@amigo.edu.co>
-Date:   Fri Oct 16 15:28:29 2026 -0500
+Para verificar los archivos modificados en cada cambio, utilizamos el comando `git --no-pager show --stat` con el identificador del commit correspondiente.
 
-    Implementar arquitectura MVC y mejoras del laboratorio
+**Parte 5A · Validación de nombres únicos**
 
- ENTREGA.md              | 117 +++++++++++++++++++++-----
- src/almacen.js          |  24 ++++++
- src/controlador.js      |  68 +++++++++++++--
- src/main.js             |  21 +++--
- src/modelo.js           | 186 ++++++++++++++++++++++++++++++++++++-----
- src/termometro-vista.js |  51 ++++++++++++
- src/vista.js            | 215 +++++++++++++++++++++++++++++++++++++++++-------
- 7 files changed, 595 insertions(+), 87 deletions(-)
- Los cambios de las partes 5A, 5B y 5C se guardaron en un mismo commit, por eso Git muestra los archivos modificados en conjunto. En la tabla anterior explicamos cuáles corresponden a cada parte.
+Comando: `git --no-pager show --stat 7dbb58a`
+
+```text
+src/modelo.js | 186
+1 file changed, 165 insertions(+), 21 deletions(-)
+```
+
+La validación de nombres únicos se incluyó en el mismo commit donde implementamos las funcionalidades principales del Modelo. Los cambios se realizaron en `modelo.js`, porque las validaciones corresponden a las reglas de negocio de la aplicación.
+
+**Parte 5B · Segunda vista del termómetro**
+
+Comando: `git --no-pager show --stat 83aab50`
+
+```text
+src/termometro-vista.js | 51
+1 file changed, 51 insertions(+)
+```
+
+Creamos una vista independiente para mostrar el progreso académico mediante un termómetro. Esto permitió incorporar otra representación de la información sin modificar las reglas de negocio del Modelo.
+
+**Parte 5C · Almacenamiento de sesión**
+
+Comando: `git --no-pager show --stat b60a010`
+
+```text
+src/almacen.js | 24
+src/main.js   | 21
+2 files changed, 36 insertions(+), 9 deletions(-)
+```
+
+Implementamos `AlmacenSesion` utilizando `sessionStorage` y configuramos su uso desde `main.js`. Así pudimos cambiar el mecanismo de almacenamiento sin modificar el funcionamiento interno del Modelo.
+
+
 ## 6. Reflexión (Parte 6)
 
 1. En la versión espagueti, ¿qué tuviste que leer o tocar para entender dónde se decide si el estudiante aprobó? ¿Y en la versión MVC?
